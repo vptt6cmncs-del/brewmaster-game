@@ -187,7 +187,7 @@ const Share = {
     const qrY = footerY - 40;
     
     // 生成二维码
-    const qrCanvas = QRCode.generate('https://brewmaster-game.github.io', qrSize);
+    const qrCanvas = QRCode.generate('https://vptt6cmncs-del.github.io/brewmaster-game/', qrSize);
     if (qrCanvas) {
       ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
     } else {
