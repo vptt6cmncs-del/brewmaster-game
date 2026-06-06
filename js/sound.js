@@ -20,10 +20,18 @@ const Sound = {
     }
   },
   
+  // 恢复音频上下文（浏览器自动暂停策略）
+  resume() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+  },
+  
   // 播放咕嘟声（温度加热/煮沸）
   playBubble() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -76,6 +84,7 @@ const Sound = {
   playBubbleLoop() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     // 播放一串咕嘟声
     for (let i = 0; i < 3; i++) {
@@ -87,6 +96,7 @@ const Sound = {
   playFermentBubble() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -112,6 +122,7 @@ const Sound = {
   playFermentLoop() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const count = 5 + Math.floor(Math.random() * 5);
     for (let i = 0; i < count; i++) {
@@ -123,6 +134,7 @@ const Sound = {
   playDrop() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -148,6 +160,7 @@ const Sound = {
   playHopDrop() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -177,6 +190,7 @@ const Sound = {
   playSuccess() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     const notes = [523.25, 659.25, 783.99]; // C大调和弦
@@ -204,6 +218,7 @@ const Sound = {
   playWarning() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -228,6 +243,7 @@ const Sound = {
   playComplete() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     const scale = [523.25, 587.33, 659.25, 698.46, 783.99, 880, 987.77, 1046.5];
@@ -256,6 +272,7 @@ const Sound = {
   playClick() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     
@@ -281,6 +298,7 @@ const Sound = {
   playPageTransition() {
     if (!this.enabled || !this.ctx) return;
     this.init();
+    this.resume();
     
     const t = this.ctx.currentTime;
     

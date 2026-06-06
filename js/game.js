@@ -1301,6 +1301,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.style.display = 'none';
   }
   
+  // 全局点击恢复音频上下文（浏览器自动播放策略）
+  const resumeAudio = () => {
+    Sound.resume();
+    document.removeEventListener('click', resumeAudio);
+    document.removeEventListener('touchstart', resumeAudio);
+  };
+  document.addEventListener('click', resumeAudio);
+  document.addEventListener('touchstart', resumeAudio);
+  
   console.log('🍀🍺 Hoppy Go Lucky 已加载');
 });
 
