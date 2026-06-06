@@ -1,23 +1,24 @@
 /* ===== 基础重置与变量 ===== */
 :root {
-  /* Hoppy Go Lucky 色彩方案 - 酒花绿+幸运金 (调深版) */
-  --hop-green: #5B8C3A;
-  --hop-light: #8BC34A;
-  --hop-dark: #33691E;
-  --lucky-gold: #F5A623;
-  --lucky-light: #FFD54F;
-  --lucky-dark: #E69500;
-  --bg-cream: #FFF8E1;
-  --bg-warm: #F5F0E8;
-  --text-dark: #3E2723;
-  --text-medium: #5D4037;
-  --text-light: #8D6E63;
+  /* Hoppy Go Lucky 色彩方案 - 工业精酿风格 (铜橙+亮金) */
+  --copper-orange: #FF6F00;
+  --copper-light: #FF8F00;
+  --copper-dark: #E65100;
+  --bright-gold: #FFD54F;
+  --gold-light: #FFE082;
+  --gold-dark: #FFC107;
+  --bg-dark: #1A1A1A;
+  --bg-gray: #2D2D2D;
+  --bg-card: #333333;
+  --text-light: #E0E0E0;
+  --text-medium: #B0B0B0;
+  --text-dark: #F5F5F5;
   --danger: #E53935;
   --warning: #FFB300;
   --success: #43A047;
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(91, 140, 58, 0.3);
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 111, 0, 0.3);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   --radius: 16px;
   --radius-sm: 8px;
 }
@@ -33,7 +34,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  background: linear-gradient(135deg, #C8E6C9 0%, #E8F5E9 50%, #C8E6C9 100%);
+  background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 50%, #1A1A1A 100%);
   color: var(--text-dark);
   overflow: hidden;
   touch-action: manipulation;
@@ -68,7 +69,7 @@ html, body {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(45, 45, 45, 0.9);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--glass-border);
 }
@@ -78,7 +79,7 @@ html, body {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
 }
 
 .page-body {
@@ -112,7 +113,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
   border-radius: 12px;
   flex-shrink: 0;
 }
@@ -124,7 +125,7 @@ html, body {
 .btn-mode .mode-name {
   font-size: 17px;
   font-weight: 700;
-  color: var(--hop-light);
+  color: var(--copper-light);
   margin-bottom: 2px;
 }
 
@@ -141,7 +142,7 @@ html, body {
 
 .mode-select h3 {
   font-size: 14px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   text-align: center;
   margin-bottom: 12px;
   letter-spacing: 2px;
@@ -159,7 +160,7 @@ html, body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--hop-green) 0%, var(--hop-light) 100%);
+  background: linear-gradient(90deg, var(--copper-orange) 0%, var(--copper-light) 100%);
   border-radius: 6px;
   transition: width 0.5s ease;
   width: 0%;
@@ -202,7 +203,7 @@ html, body {
 }
 
 .unlock-item.unlocked {
-  border-color: var(--hop-green);
+  border-color: var(--copper-orange);
   cursor: pointer;
 }
 
@@ -223,7 +224,7 @@ html, body {
 .unlock-item .unlock-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--hop-light);
+  color: var(--copper-light);
 }
 
 .unlock-item .unlock-score {
@@ -249,7 +250,7 @@ html, body {
 
 .exam-intro h3 {
   font-size: 22px;
-  color: var(--hop-light);
+  color: var(--copper-light);
   margin-bottom: 12px;
 }
 
@@ -279,7 +280,7 @@ html, body {
 .stat-box .stat-value {
   font-size: 32px;
   font-weight: 800;
-  color: var(--hop-light);
+  color: var(--copper-light);
 }
 
 .stat-box .stat-label {
@@ -295,7 +296,7 @@ html, body {
 .question-number {
   font-size: 18px;
   font-weight: 700;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   text-align: center;
   margin-bottom: 16px;
 }
@@ -317,12 +318,12 @@ html, body {
 }
 
 .clue-param {
-  background: rgba(91, 140, 58, 0.15);
-  border: 1px solid var(--hop-green);
+  background: rgba(255, 111, 0, 0.15);
+  border: 1px solid var(--copper-orange);
   border-radius: 20px;
   padding: 6px 14px;
   font-size: 13px;
-  color: var(--hop-light);
+  color: var(--copper-light);
 }
 
 .clue-desc {
@@ -406,7 +407,7 @@ html, body {
 
 .param-input label {
   font-size: 13px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   font-weight: 600;
 }
 
@@ -421,7 +422,7 @@ html, body {
 }
 
 .param-input input:focus {
-  border-color: var(--hop-green);
+  border-color: var(--copper-orange);
 }
 
 .sub-hint {
@@ -444,22 +445,22 @@ button, .btn {
   gap: 8px;
 }
 
-/* 主要按钮 - 酒花绿渐变 */
+/* 主要按钮 - 铜橙渐变 */
 .btn-primary {
   width: 100%;
   padding: 18px 28px;
-  background: linear-gradient(135deg, var(--hop-light) 0%, var(--hop-green) 50%, var(--hop-dark) 100%);
+  background: linear-gradient(135deg, var(--copper-light) 0%, var(--copper-orange) 50%, var(--copper-dark) 100%);
   color: #fff;
   box-shadow: 
-    0 4px 20px rgba(91, 140, 58, 0.4),
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 4px 20px rgba(255, 111, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   margin: 16px 0;
   border-radius: 20px;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -482,27 +483,27 @@ button, .btn {
 .btn-primary:active {
   transform: scale(0.97) translateY(1px);
   box-shadow: 
-    0 2px 10px rgba(91, 140, 58, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    0 2px 10px rgba(255, 111, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* 步骤按钮 - 带图标和箭头 */
 .btn-step {
   width: 100%;
   padding: 20px 24px;
-  background: linear-gradient(135deg, var(--hop-light) 0%, var(--hop-green) 50%, var(--hop-dark) 100%);
+  background: linear-gradient(135deg, var(--copper-light) 0%, var(--copper-orange) 50%, var(--copper-dark) 100%);
   color: #fff;
   box-shadow: 
-    0 4px 20px rgba(91, 140, 58, 0.4),
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 4px 20px rgba(255, 111, 0, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   margin: 20px 0 12px;
   border-radius: 20px;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
   justify-content: space-between;
@@ -555,20 +556,20 @@ button, .btn {
 .btn-step:active {
   transform: scale(0.97) translateY(1px);
   box-shadow: 
-    0 2px 10px rgba(91, 140, 58, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    0 2px 10px rgba(255, 111, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 完成酿造按钮 - 幸运金脉冲效果 */
+/* 完成酿造按钮 - 亮金脉冲效果 */
 .btn-finish {
   width: 100%;
   padding: 22px 28px;
-  background: linear-gradient(135deg, var(--lucky-light) 0%, var(--lucky-gold) 30%, var(--lucky-dark) 100%);
-  color: var(--text-dark);
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--bright-gold) 30%, var(--gold-dark) 100%);
+  color: #1A1A1A;
   box-shadow: 
-    0 4px 25px rgba(245, 166, 35, 0.5),
-    0 1px 3px rgba(0, 0, 0, 0.2),
+    0 4px 25px rgba(255, 213, 79, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
   margin: 24px 0 16px;
   border-radius: 20px;
@@ -582,8 +583,8 @@ button, .btn {
 }
 
 @keyframes finishPulse {
-  0%, 100% { box-shadow: 0 4px 25px rgba(245, 166, 35, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
-  50% { box-shadow: 0 6px 35px rgba(245, 166, 35, 0.7), 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+  0%, 100% { box-shadow: 0 4px 25px rgba(255, 213, 79, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+  50% { box-shadow: 0 6px 35px rgba(255, 213, 79, 0.7), 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
 }
 
 .btn-finish::before {
@@ -605,9 +606,9 @@ button, .btn {
   transform: scale(0.97) translateY(1px);
   animation: none;
   box-shadow: 
-    0 2px 12px rgba(245, 166, 35, 0.4),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    0 2px 12px rgba(255, 213, 79, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-finish .finish-icon {
@@ -623,8 +624,8 @@ button, .btn {
   margin: 8px auto 0;
   display: block;
   background: transparent;
-  color: var(--text-light);
-  border: 1px solid rgba(91, 140, 58, 0.2);
+  color: var(--text-medium);
+  border: 1px solid rgba(255, 111, 0, 0.2);
   border-radius: 20px;
   font-size: 13px;
   font-weight: 400;
@@ -634,14 +635,14 @@ button, .btn {
 }
 
 .btn-home-muted:hover {
-  color: var(--hop-dark);
-  border-color: rgba(91, 140, 58, 0.4);
-  background: rgba(91, 140, 58, 0.05);
+  color: var(--copper-light);
+  border-color: rgba(255, 111, 0, 0.4);
+  background: rgba(255, 111, 0, 0.05);
 }
 
 .btn-home-muted:active {
   transform: scale(0.97);
-  color: var(--hop-green);
+  color: var(--copper-orange);
 }
 
 /* 次要按钮 */
@@ -659,7 +660,7 @@ button, .btn {
 }
 
 .btn-secondary:active {
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
   transform: scale(0.98);
 }
 
@@ -667,7 +668,7 @@ button, .btn {
   width: 36px;
   height: 36px;
   background: var(--glass-bg);
-  color: var(--hop-dark);
+  color: var(--copper-light);
   border: 1px solid var(--glass-border);
   font-size: 20px;
   border-radius: 50%;
@@ -700,7 +701,7 @@ button, .btn {
   content: '';
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(91, 140, 58, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 111, 0, 0.12) 0%, transparent 70%);
   animation: float 8s ease-in-out infinite;
 }
 
@@ -746,14 +747,14 @@ button, .btn {
 .logo h1 {
   font-size: 28px;
   font-weight: 800;
-  color: var(--hop-dark);
-  text-shadow: 0 2px 10px rgba(91, 140, 58, 0.3);
+  color: var(--copper-light);
+  text-shadow: 0 2px 10px rgba(255, 111, 0, 0.3);
   margin-bottom: 4px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   letter-spacing: 2px;
   margin-bottom: 12px;
   font-weight: 600;
@@ -799,7 +800,7 @@ button, .btn {
 
 .style-card:active {
   transform: scale(0.96);
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
 }
 
 .style-card .emoji {
@@ -811,7 +812,7 @@ button, .btn {
 .style-card .name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 4px;
 }
 
@@ -839,19 +840,19 @@ button, .btn {
 
 .style-item:active {
   transform: scale(0.98);
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
 }
 
 .style-item .style-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 4px;
 }
 
 .style-item .style-en {
   font-size: 12px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   margin-bottom: 8px;
 }
 
@@ -871,9 +872,9 @@ button, .btn {
 .style-item .param-tag {
   font-size: 11px;
   padding: 3px 8px;
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
   border-radius: 12px;
-  color: var(--hop-dark);
+  color: var(--copper-light);
 }
 
 /* ===== 酿酒师选择 ===== */
@@ -898,7 +899,7 @@ button, .btn {
 
 .brewer-card:active {
   transform: scale(0.98);
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
 }
 
 .brewer-card .avatar {
@@ -908,7 +909,7 @@ button, .btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -926,7 +927,7 @@ button, .btn {
 .brewer-card .name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 2px;
 }
 
@@ -938,7 +939,7 @@ button, .btn {
 
 .brewer-card .catchphrase {
   font-size: 13px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   font-style: italic;
 }
 
@@ -947,7 +948,7 @@ button, .btn {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(45, 45, 45, 0.9);
   backdrop-filter: blur(10px);
   padding: 12px 16px;
   border-bottom: 1px solid var(--glass-border);
@@ -970,9 +971,9 @@ button, .btn {
 }
 
 .step.active {
-  background: linear-gradient(135deg, var(--hop-green) 0%, var(--hop-dark) 100%);
+  background: linear-gradient(135deg, var(--copper-orange) 0%, var(--copper-dark) 100%);
   color: #fff;
-  border-color: var(--hop-green);
+  border-color: var(--copper-orange);
   font-weight: 600;
 }
 
@@ -1004,7 +1005,7 @@ button, .btn {
 
 .brew-step h3 {
   font-size: 20px;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 4px;
 }
 
@@ -1026,7 +1027,7 @@ button, .btn {
 
 .panel h4 {
   font-size: 14px;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 12px;
   font-weight: 600;
 }
@@ -1042,7 +1043,7 @@ button, .btn {
   padding: 10px 8px;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-dark);
   font-size: 13px;
   cursor: pointer;
@@ -1055,9 +1056,9 @@ button, .btn {
 }
 
 .ingredient-btn.selected {
-  background: rgba(91, 140, 58, 0.25);
-  border-color: var(--hop-green);
-  color: var(--hop-dark);
+  background: rgba(255, 111, 0, 0.25);
+  border-color: var(--copper-orange);
+  color: var(--copper-light);
 }
 
 .ingredient-btn .ing-name {
@@ -1080,7 +1081,7 @@ button, .btn {
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: rgba(91, 140, 58, 0.15);
+  background: rgba(255, 111, 0, 0.15);
   outline: none;
   -webkit-appearance: none;
 }
@@ -1090,9 +1091,9 @@ button, .btn {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--hop-green) 0%, var(--hop-dark) 100%);
+  background: linear-gradient(135deg, var(--copper-orange) 0%, var(--copper-dark) 100%);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(91, 140, 58, 0.4);
+  box-shadow: 0 2px 8px rgba(255, 111, 0, 0.4);
 }
 
 .slider-value {
@@ -1102,7 +1103,7 @@ button, .btn {
   margin-top: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
 }
 
 .slider-value .ideal {
@@ -1125,17 +1126,17 @@ button, .btn {
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background: rgba(91, 140, 58, 0.15);
-  border: 1px solid var(--hop-green);
+  background: rgba(255, 111, 0, 0.15);
+  border: 1px solid var(--copper-orange);
   border-radius: 12px;
   font-size: 12px;
-  color: var(--hop-dark);
+  color: var(--copper-light);
 }
 
 .selected-tag .weight-btn {
-  background: rgba(91, 140, 58, 0.2);
-  border: 1px solid var(--hop-green);
-  color: var(--hop-dark);
+  background: rgba(255, 111, 0, 0.2);
+  border: 1px solid var(--copper-orange);
+  color: var(--copper-light);
   border-radius: 4px;
   padding: 0 6px;
   margin: 0 2px;
@@ -1145,7 +1146,7 @@ button, .btn {
 }
 
 .selected-tag .weight-btn:active {
-  background: rgba(91, 140, 58, 0.4);
+  background: rgba(255, 111, 0, 0.4);
 }
 
 /* ===== 酿酒师气泡 ===== */
@@ -1156,15 +1157,15 @@ button, .btn {
   right: 12px;
   max-width: 600px;
   margin: 0 auto;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 250, 240, 0.95) 100%);
-  border: 2px solid var(--hop-green);
+  background: linear-gradient(135deg, rgba(45, 45, 45, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
+  border: 2px solid var(--copper-orange);
   border-radius: 20px;
   padding: 16px 20px;
   display: none;
   align-items: flex-start;
   gap: 14px;
   z-index: 100;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   animation: bubbleIn 0.3s ease;
   backdrop-filter: blur(10px);
 }
@@ -1175,12 +1176,12 @@ button, .btn {
 
 .brewer-bubble.warning {
   border-color: var(--warning);
-  background: linear-gradient(135deg, rgba(255, 250, 240, 0.95) 0%, rgba(255, 245, 230, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(45, 45, 45, 0.95) 0%, rgba(40, 35, 25, 0.95) 100%);
 }
 
 .brewer-bubble.success {
   border-color: var(--success);
-  background: linear-gradient(135deg, rgba(240, 255, 240, 0.95) 0%, rgba(230, 250, 230, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(35, 45, 35, 0.95) 0%, rgba(25, 40, 25, 0.95) 100%);
 }
 
 @keyframes bubbleIn {
@@ -1220,7 +1221,7 @@ button, .btn {
 }
 
 .bubble-close:hover {
-  color: var(--hop-dark);
+  color: var(--copper-light);
 }
 
 /* ===== 结果页 ===== */
@@ -1254,7 +1255,7 @@ button, .btn {
   left: 0;
   right: 0;
   height: 75%;
-  background: linear-gradient(180deg, var(--lucky-gold) 0%, var(--lucky-dark) 100%);
+  background: linear-gradient(180deg, var(--bright-gold) 0%, var(--gold-dark) 100%);
   transition: background 0.5s;
 }
 
@@ -1276,8 +1277,8 @@ button, .btn {
 .big-score {
   font-size: 64px;
   font-weight: 800;
-  color: var(--hop-dark);
-  text-shadow: 0 2px 20px rgba(91, 140, 58, 0.3);
+  color: var(--copper-light);
+  text-shadow: 0 2px 20px rgba(255, 111, 0, 0.3);
   line-height: 1;
 }
 
@@ -1285,7 +1286,7 @@ button, .btn {
   display: inline-block;
   margin-top: 8px;
   padding: 6px 16px;
-  background: linear-gradient(135deg, var(--hop-green) 0%, var(--hop-dark) 100%);
+  background: linear-gradient(135deg, var(--copper-orange) 0%, var(--copper-dark) 100%);
   color: #fff;
   border-radius: 20px;
   font-size: 14px;
@@ -1295,7 +1296,7 @@ button, .btn {
 /* ===== 参数对比条 ===== */
 .params-comparison h4 {
   font-size: 14px;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   margin-bottom: 12px;
 }
 
@@ -1310,14 +1311,14 @@ button, .btn {
   width: 100px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--hop-dark);
+  color: var(--copper-light);
   text-align: right;
 }
 
 .param-bar {
   flex: 1;
   height: 20px;
-  background: rgba(91, 140, 58, 0.1);
+  background: rgba(255, 111, 0, 0.1);
   border-radius: 10px;
   position: relative;
   overflow: hidden;
@@ -1327,16 +1328,16 @@ button, .btn {
   position: absolute;
   top: 0;
   height: 100%;
-  background: rgba(91, 140, 58, 0.2);
+  background: rgba(255, 111, 0, 0.2);
   border-radius: 10px;
-  border: 1px dashed var(--hop-green);
+  border: 1px dashed var(--copper-orange);
 }
 
 .param-actual {
   position: absolute;
   top: 2px;
   height: 16px;
-  background: linear-gradient(90deg, var(--hop-green) 0%, var(--hop-light) 100%);
+  background: linear-gradient(90deg, var(--copper-orange) 0%, var(--copper-light) 100%);
   border-radius: 8px;
   transition: width 0.5s ease;
 }
@@ -1351,8 +1352,8 @@ button, .btn {
 .brewer-comment {
   margin: 20px 0;
   padding: 16px;
-  background: rgba(91, 140, 58, 0.1);
-  border-left: 3px solid var(--hop-green);
+  background: rgba(255, 111, 0, 0.1);
+  border-left: 3px solid var(--copper-orange);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   font-size: 14px;
   line-height: 1.6;
@@ -1366,7 +1367,7 @@ button, .btn {
 
 .naming-section h4 {
   font-size: 14px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   margin-bottom: 10px;
 }
 
@@ -1386,7 +1387,7 @@ button, .btn {
 }
 
 .naming-section input:focus {
-  border-color: var(--hop-green);
+  border-color: var(--copper-orange);
 }
 
 /* ===== 分享页 ===== */
@@ -1427,7 +1428,7 @@ button, .btn {
 .gallery-item .gallery-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--hop-light);
+  color: var(--copper-light);
   margin-bottom: 4px;
 }
 
@@ -1440,7 +1441,7 @@ button, .btn {
 .gallery-item .gallery-score {
   font-size: 18px;
   font-weight: 700;
-  color: var(--hop-green);
+  color: var(--copper-orange);
 }
 
 .empty-hint {
@@ -1485,7 +1486,7 @@ button, .btn {
 .bar-intro h3 {
   font-size: 22px;
   margin-bottom: 12px;
-  color: var(--hop-light);
+  color: var(--copper-light);
 }
 
 .bar-intro p {
@@ -1523,7 +1524,7 @@ button, .btn {
 .customer-name {
   font-size: 18px;
   font-weight: bold;
-  color: var(--hop-light);
+  color: var(--copper-light);
   margin-bottom: 8px;
 }
 
@@ -1542,7 +1543,7 @@ button, .btn {
 .pref-tag {
   display: inline-block;
   padding: 4px 12px;
-  background: var(--hop-dark);
+  background: var(--copper-dark);
   border-radius: 20px;
   font-size: 13px;
   color: var(--text-dark);
@@ -1550,7 +1551,7 @@ button, .btn {
 
 .menu-section h4 {
   margin-bottom: 12px;
-  color: var(--hop-light);
+  color: var(--copper-light);
 }
 
 .menu-list {
@@ -1573,8 +1574,8 @@ button, .btn {
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: var(--hop-green);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--copper-orange);
 }
 
 .menu-item.disabled {
@@ -1583,8 +1584,8 @@ button, .btn {
 }
 
 .menu-item.selected {
-  border-color: var(--hop-green);
-  background: rgba(91, 140, 58, 0.2);
+  border-color: var(--copper-orange);
+  background: rgba(255, 111, 0, 0.2);
 }
 
 .menu-item.best-match {
@@ -1673,7 +1674,7 @@ button, .btn {
 .match-score {
   font-size: 24px;
   font-weight: bold;
-  color: var(--hop-light);
+  color: var(--copper-light);
   margin: 12px 0;
 }
 
@@ -1685,7 +1686,7 @@ button, .btn {
 
 .streak {
   font-size: 14px;
-  color: var(--hop-green);
+  color: var(--copper-orange);
   margin-top: 8px;
 }
 
@@ -1705,6 +1706,6 @@ button, .btn {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--hop-dark);
+  background: var(--copper-dark);
   border-radius: 2px;
 }

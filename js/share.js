@@ -29,11 +29,11 @@ const Share = {
     
     if (!style || !actual || !score) return;
     
-    // 背景 - 深棕色渐变
+    // 背景 - 深灰工业风渐变
     const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-    bgGrad.addColorStop(0, '#2C1810');
-    bgGrad.addColorStop(0.5, '#3E2723');
-    bgGrad.addColorStop(1, '#1a0f0a');
+    bgGrad.addColorStop(0, '#1A1A1A');
+    bgGrad.addColorStop(0.5, '#2D2D2D');
+    bgGrad.addColorStop(1, '#0D0D0D');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, w, h);
     
@@ -41,17 +41,17 @@ const Share = {
     this.drawDecorations(ctx, w, h);
     
     // 顶部标题区
-    ctx.fillStyle = 'rgba(91, 140, 58, 0.15)';
+    ctx.fillStyle = 'rgba(255, 111, 0, 0.15)';
     ctx.fillRect(0, 0, w, 280);
     
     // 游戏Logo
     ctx.font = 'bold 36px -apple-system, sans-serif';
-    ctx.fillStyle = '#5B8C3A';
+    ctx.fillStyle = '#FF6F00';
     ctx.textAlign = 'center';
     ctx.fillText('🍀🍺 Hoppy Go Lucky', w / 2, 70);
     
     ctx.font = '24px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(91, 140, 58, 0.6)';
+    ctx.fillStyle = 'rgba(255, 111, 0, 0.6)';
     ctx.fillText('酒花与幸运 · 酿造你的快乐', w / 2, 110);
     
     // 酒名
@@ -65,19 +65,19 @@ const Share = {
     
     // 风格标签
     ctx.font = '28px -apple-system, sans-serif';
-    ctx.fillStyle = '#5B8C3A';
+    ctx.fillStyle = '#FF6F00';
     ctx.fillText(`${style.name} · ${style.nameEn}`, w / 2, 250);
     
     // 评分大数字
     const scoreY = 380;
     ctx.font = 'bold 200px -apple-system, sans-serif';
-    ctx.fillStyle = score.rating.color || '#5B8C3A';
+    ctx.fillStyle = score.rating.color || '#FF6F00';
     ctx.textAlign = 'center';
     ctx.fillText(score.total.toString(), w / 2, scoreY);
     
     // 评分标签
     ctx.font = 'bold 48px -apple-system, sans-serif';
-    ctx.fillStyle = score.rating.color || '#5B8C3A';
+    ctx.fillStyle = score.rating.color || '#FF6F00';
     ctx.fillText(`${score.rating.emoji} ${score.rating.level}`, w / 2, scoreY + 60);
     
     // 啤酒杯绘制
@@ -89,17 +89,17 @@ const Share = {
     const paramBoxX = (w - paramBoxW) / 2;
     
     // 参数背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.beginPath();
     ctx.roundRect(paramBoxX, paramY, paramBoxW, 320, 20);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(91, 140, 58, 0.3)';
+    ctx.strokeStyle = 'rgba(255, 111, 0, 0.3)';
     ctx.lineWidth = 2;
     ctx.stroke();
     
     // 参数标题
     ctx.font = 'bold 32px -apple-system, sans-serif';
-    ctx.fillStyle = '#5B8C3A';
+    ctx.fillStyle = '#FF6F00';
     ctx.textAlign = 'center';
     ctx.fillText('酿造参数', w / 2, paramY + 50);
     
@@ -119,15 +119,15 @@ const Share = {
       const x3 = paramBoxX + 650;
       
       ctx.font = '28px -apple-system, sans-serif';
-      ctx.fillStyle = 'rgba(62, 39, 35, 0.7)';
+      ctx.fillStyle = 'rgba(224, 224, 224, 0.7)';
       ctx.textAlign = 'left';
       ctx.fillText(p.label, x1, y);
       
-      ctx.fillStyle = '#3E2723';
+      ctx.fillStyle = '#E0E0E0';
       ctx.textAlign = 'center';
       ctx.fillText(p.actual, x2, y);
       
-      ctx.fillStyle = 'rgba(91, 140, 58, 0.8)';
+      ctx.fillStyle = 'rgba(255, 111, 0, 0.8)';
       ctx.fillText(`目标: ${p.target}`, x3, y);
     });
     
@@ -135,7 +135,7 @@ const Share = {
     const commentY = paramY + 360;
     const commentBoxH = 280;
     
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
     ctx.beginPath();
     ctx.roundRect(paramBoxX, commentY, paramBoxW, commentBoxH, 20);
     ctx.fill();
@@ -148,7 +148,7 @@ const Share = {
     // 评语
     const comment = BrewLogic.generateComment(style, score, actual);
     ctx.font = '26px -apple-system, sans-serif';
-    ctx.fillStyle = '#3E2723';
+    ctx.fillStyle = '#E0E0E0';
     ctx.textAlign = 'left';
     
     // 分行显示评语
@@ -159,11 +159,11 @@ const Share = {
     
     // 酿酒师名字
     ctx.font = 'bold 28px -apple-system, sans-serif';
-    ctx.fillStyle = '#5B8C3A';
+    ctx.fillStyle = '#FF6F00';
     ctx.fillText(`${brewer?.name || '酿酒师'}说：`, startX, startY);
     
     ctx.font = '24px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(62, 39, 35, 0.9)';
+    ctx.fillStyle = 'rgba(224, 224, 224, 0.9)';
     const lines = this.wrapText(ctx, comment, maxWidth);
     lines.forEach((line, i) => {
       if (i < 5) { // 最多显示5行
@@ -174,7 +174,7 @@ const Share = {
     // 底部信息
     const footerY = h - 120;
     ctx.font = '24px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(62, 39, 35, 0.5)';
+    ctx.fillStyle = 'rgba(224, 224, 224, 0.5)';
     ctx.textAlign = 'center';
     ctx.fillText('基于 BJCP 2021 啤酒风格指南 · 酿造快乐，分享幸运 🍀', w / 2, footerY);
     
@@ -192,10 +192,10 @@ const Share = {
       ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
     } else {
       // 备用：简单框
-      ctx.strokeStyle = 'rgba(91, 140, 58, 0.3)';
+      ctx.strokeStyle = 'rgba(255, 111, 0, 0.3)';
       ctx.lineWidth = 2;
       ctx.strokeRect(qrX, qrY, qrSize, qrSize);
-      ctx.fillStyle = 'rgba(91, 140, 58, 0.3)';
+      ctx.fillStyle = 'rgba(255, 111, 0, 0.3)';
       ctx.font = '16px -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('QR', qrX + qrSize / 2, qrY + qrSize / 2 + 5);
@@ -203,7 +203,7 @@ const Share = {
     
     // 日期
     ctx.font = '20px -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(62, 39, 35, 0.4)';
+    ctx.fillStyle = 'rgba(224, 224, 224, 0.4)';
     ctx.fillText(new Date().toLocaleDateString('zh-CN'), w / 2, h - 30);
   },
   
@@ -287,10 +287,10 @@ const Share = {
   drawDecorations(ctx, w, h) {
     // 几个半透明圆形光斑
     const spots = [
-      { x: 100, y: 200, r: 150, color: 'rgba(91, 140, 58, 0.08)' },
-      { x: w - 150, y: 400, r: 200, color: 'rgba(91, 140, 58, 0.06)' },
-      { x: 200, y: h - 300, r: 180, color: 'rgba(91, 140, 58, 0.05)' },
-      { x: w - 100, y: h - 200, r: 120, color: 'rgba(91, 140, 58, 0.07)' }
+      { x: 100, y: 200, r: 150, color: 'rgba(255, 111, 0, 0.08)' },
+      { x: w - 150, y: 400, r: 200, color: 'rgba(255, 111, 0, 0.06)' },
+      { x: 200, y: h - 300, r: 180, color: 'rgba(255, 111, 0, 0.05)' },
+      { x: w - 100, y: h - 200, r: 120, color: 'rgba(255, 111, 0, 0.07)' }
     ];
     
     spots.forEach(spot => {
