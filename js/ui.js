@@ -43,39 +43,9 @@ const UI = {
     });
   },
   
-  // 渲染自由酿造模式
-  renderFreeMode() {
-    const selector = document.getElementById('style-selector-free');
-    if (!selector) return;
-    
-    selector.innerHTML = '';
-    
-    // 添加"完全自由"选项
-    const freeBtn = document.createElement('button');
-    freeBtn.className = 'style-btn free-option selected';
-    freeBtn.textContent = '🧪 完全自由（无参考风格）';
-    freeBtn.onclick = () => {
-      game.state.freeStyle = null;
-      document.querySelectorAll('#style-selector-free .style-btn').forEach(b => b.classList.remove('selected'));
-      freeBtn.classList.add('selected');
-    };
-    selector.appendChild(freeBtn);
-    
-    // 添加各流派风格
-    for (const familyKey in BJCP_STYLES) {
-      const family = BJCP_STYLES[familyKey];
-      family.styles.forEach(style => {
-        const btn = document.createElement('button');
-        btn.className = 'style-btn';
-        btn.textContent = `${family.emoji} ${style.name}`;
-        btn.onclick = () => {
-          game.state.freeStyle = style;
-          document.querySelectorAll('#style-selector-free .style-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-        };
-        selector.appendChild(btn);
-      });
-    }
+  // 渲染酒吧推荐模式
+  renderBarMode() {
+    // 酒吧模式不需要预渲染，所有内容在nextBarCustomer中动态生成
   },
   renderStyleGrid() {
     const grid = document.getElementById('style-grid');
@@ -114,10 +84,10 @@ const UI = {
         <div class="style-en">${style.nameEn} (${style.id})</div>
         <div class="style-desc">${style.description}</div>
         <div class="style-params">
-          <span class="param-tag">OG ${style.og.min}-${style.og.max}</span>
-          <span class="param-tag">IBU ${style.ibu.min}-${style.ibu.max}</span>
-          <span class="param-tag">ABV ${style.abv.min}-${style.abv.max}%</span>
-          <span class="param-tag">SRM ${style.srm.min}-${style.srm.max}</span>
+          <span class="param-tag">OG（初始比重）${style.og.min}-${style.og.max}</span>
+          <span class="param-tag">IBU（苦度）${style.ibu.min}-${style.ibu.max}</span>
+          <span class="param-tag">ABV（酒精度）${style.abv.min}-${style.abv.max}%</span>
+          <span class="param-tag">SRM（色度）${style.srm.min}-${style.srm.max}</span>
         </div>
       `;
       item.onclick = () => game.selectStyle(style);
@@ -215,82 +185,193 @@ const UI = {
     // 初始化状态
     game.state.mashTemp = style.mashTemp.ideal;
     game.state.mashTime = style.mashTime.ideal;
-    // 根据目标OG动态计算默认麦芽重量
-    // 深色烘烤麦芽应大幅减少比例
+    
+    // ===== 默认麦芽选择算法（分离OG和SRM计算）=====
     const targetOG = style.og.target || (style.og.min + style.og.max) / 2;
-    const defaultMalts = style.malts.filter(m => m.default);
-    let totalPPG = 0;
-    defaultMalts.forEach(m => {
-      const ing = INGREDIENTS.malts[m.name];
-      const color = ing?.color || m.color || 2;
-      let weightFactor = 1;
-      if (color > 300) weightFactor = 0.04;      // 黑麦芽、烘烤大麦（极少量）
-      else if (color > 100) weightFactor = 0.08;   // 巧克力麦芽（少量）
-      else if (color > 40) weightFactor = 0.25;    // 深色焦糖
-      else if (color > 10) weightFactor = 0.5;     // 浅色焦糖
-      totalPPG += (ing?.ppg || m.gravity || 35) * weightFactor;
-    });
-    const neededWeight = ((targetOG - 1) * BrewLogic.BATCH_SIZE * 1000) / (totalPPG * BrewLogic.MASH_EFFICIENCY || 200);
-    
-    game.state.selectedMalts = defaultMalts.map(m => {
-      const ing = INGREDIENTS.malts[m.name];
-      const color = ing?.color || m.color || 2;
-      let weightFactor = 1;
-      if (color > 300) weightFactor = 0.04;
-      else if (color > 100) weightFactor = 0.08;
-      else if (color > 40) weightFactor = 0.25;
-      else if (color > 10) weightFactor = 0.5;
-      const weight = Math.round(neededWeight * weightFactor);
-      return { name: m.name, weight: Math.max(1, weight) };
-    }).filter(m => {
-      const ing = INGREDIENTS.malts[m.name];
-      const color = ing?.color || 2;
-      if (color > 100) {
-        const rawWeight = neededWeight * (color > 300 ? 0.04 : 0.08);
-        return rawWeight >= 0.5; // 降低到0.5就保留
-      }
-      return true;
-    });
-    
-    // 对于深色风格(SRM>20)，如果过滤后没有深色麦芽，强制添加回1磅最深色麦芽
-    // 如果有多于1种深色麦芽，只保留最深色的1种
-    const darkMalts = game.state.selectedMalts.filter(m => {
-      const ing = INGREDIENTS.malts[m.name];
-      return (ing?.color || 2) > 100;
-    });
     const targetSRM = style.srm.target || (style.srm.min + style.srm.max) / 2;
-    if (targetSRM > 20) {
-      if (darkMalts.length === 0) {
-        // 没有深色麦芽，添加最深色的1种
-        const darkest = defaultMalts.filter(m => {
+    const defaultMalts = style.malts.filter(m => m.default);
+    const allMalts = style.malts;
+    
+    // 辅助函数
+    const getSRM = (weights) => {
+      let mcu = 0;
+      weights.forEach(w => {
+        const ing = INGREDIENTS.malts[w.name];
+        mcu += (ing?.color || 2) * w.weight;
+      });
+      return Math.max(1, Math.min(50, 1.4922 * Math.pow(mcu / BrewLogic.BATCH_SIZE, 0.6859)));
+    };
+    
+    const getOG = (weights) => {
+      let points = 0;
+      weights.forEach(w => {
+        const ing = INGREDIENTS.malts[w.name];
+        points += (ing?.ppg || 35) * w.weight * BrewLogic.MASH_EFFICIENCY;
+      });
+      return 1 + points / (BrewLogic.BATCH_SIZE * 1000);
+    };
+    
+    const mcuFromSRM = (srm) => {
+      return Math.pow(srm / 1.4922, 1 / 0.6859) * BrewLogic.BATCH_SIZE;
+    };
+    
+    // 分类麦芽
+    const baseMalts = defaultMalts.filter(m => {
+      const ing = INGREDIENTS.malts[m.name];
+      return (ing?.color || m.color || 2) <= 10;
+    });
+    const midDarkMalts = defaultMalts.filter(m => {
+      const ing = INGREDIENTS.malts[m.name];
+      const c = ing?.color || m.color || 2;
+      return c > 10 && c <= 100;
+    });
+    const veryDarkMalts = defaultMalts.filter(m => {
+      const ing = INGREDIENTS.malts[m.name];
+      return (ing?.color || m.color || 2) > 100;
+    });
+    
+    // 1. 极深色麦芽：只选一种最深的，固定1磅
+    let veryDarkWeights = [];
+    if (veryDarkMalts.length > 0) {
+      const deepest = veryDarkMalts.sort((a, b) => {
+        const ca = INGREDIENTS.malts[a.name]?.color || a.color || 2;
+        const cb = INGREDIENTS.malts[b.name]?.color || b.color || 2;
+        return cb - ca;
+      })[0];
+      veryDarkWeights = [{ name: deepest.name, weight: 1 }];
+    }
+    
+    // 2. 计算基础麦芽重量（承担全部OG）
+    const basePPG = baseMalts.reduce((sum, m) => {
+      const ing = INGREDIENTS.malts[m.name];
+      return sum + (ing?.ppg || m.gravity || 35);
+    }, 0);
+    
+    const vdPoints = veryDarkWeights.reduce((sum, w) => {
+      const ing = INGREDIENTS.malts[w.name];
+      return sum + (ing?.ppg || 25) * w.weight;
+    }, 0);
+    
+    let baseWeights = [];
+    if (baseMalts.length > 0) {
+      const basePointsNeeded = (targetOG - 1) * BrewLogic.BATCH_SIZE * 1000 - vdPoints;
+      const baseWeight = Math.max(1, basePointsNeeded / (basePPG * BrewLogic.MASH_EFFICIENCY));
+      const perMalt = Math.max(1, Math.round(baseWeight / baseMalts.length));
+      baseWeights = baseMalts.map(m => ({ name: m.name, weight: perMalt }));
+    }
+    
+    // 3. 检查当前SRM
+    let currentWeights = [...baseWeights, ...veryDarkWeights];
+    let currentSRM = getSRM(currentWeights);
+    
+    // 4. 如果SRM不够，添加中等色度默认麦芽
+    let midDarkWeights = [];
+    if (currentSRM < style.srm.min && midDarkMalts.length > 0) {
+      const targetMCU = mcuFromSRM(targetSRM);
+      const currentMCU = mcuFromSRM(currentSRM);
+      const mcuNeeded = targetMCU - currentMCU;
+      
+      const totalMidColor = midDarkMalts.reduce((sum, m) => {
+        const ing = INGREDIENTS.malts[m.name];
+        return sum + (ing?.color || m.color || 2);
+      }, 0);
+      
+      midDarkWeights = midDarkMalts.map(m => {
+        const ing = INGREDIENTS.malts[m.name];
+        const color = ing?.color || m.color || 2;
+        const weight = Math.max(1, Math.round(mcuNeeded / totalMidColor));
+        return { name: m.name, weight };
+      });
+    }
+    
+    // 5. 如果SRM仍不够，从所有可用麦芽中选择
+    let extraWeights = [];
+    let weights = [...baseWeights, ...midDarkWeights, ...veryDarkWeights];
+    let srm = getSRM(weights);
+    
+    if (srm < style.srm.min) {
+      // 找到色度适中且未使用的麦芽
+      let candidates = allMalts.filter(m => {
+        const ing = INGREDIENTS.malts[m.name];
+        const c = ing?.color || m.color || 2;
+        return c > 0 && c <= 100 && !weights.find(w => w.name === m.name);
+      });
+      
+      if (candidates.length === 0) {
+        // 放宽条件
+        candidates = allMalts.filter(m => {
           const ing = INGREDIENTS.malts[m.name];
-          return (ing?.color || 2) > 100;
-        }).sort((a, b) => {
-          const ca = INGREDIENTS.malts[a.name]?.color || 2;
-          const cb = INGREDIENTS.malts[b.name]?.color || 2;
-          return cb - ca;
+          const c = ing?.color || m.color || 2;
+          return c > 0 && !weights.find(w => w.name === m.name);
+        });
+      }
+      
+      if (candidates.length > 0) {
+        const targetMCU = mcuFromSRM(targetSRM);
+        const currentMCU = weights.reduce((sum, w) => {
+          const ing = INGREDIENTS.malts[w.name];
+          return sum + (ing?.color || 2) * w.weight;
+        }, 0);
+        const mcuNeeded = targetMCU - currentMCU;
+        
+        // 选能最有效补充MCU的
+        const best = candidates.sort((a, b) => {
+          const ca = INGREDIENTS.malts[a.name]?.color || a.color || 2;
+          const cb = INGREDIENTS.malts[b.name]?.color || b.color || 2;
+          return Math.abs(ca - mcuNeeded) - Math.abs(cb - mcuNeeded);
         })[0];
-        if (darkest) {
-          game.state.selectedMalts.push({ name: darkest.name, weight: 1 });
-        }
-      } else if (darkMalts.length > 1) {
-        // 有多于1种深色麦芽，只保留最深色的1种
-        const sorted = darkMalts.sort((a, b) => {
-          const ca = INGREDIENTS.malts[a.name]?.color || 2;
-          const cb = INGREDIENTS.malts[b.name]?.color || 2;
-          return cb - ca;
-        });
-        // 移除除了最深色之外的所有深色麦芽
-        game.state.selectedMalts = game.state.selectedMalts.filter(m => {
-          const ing = INGREDIENTS.malts[m.name];
-          const color = ing?.color || 2;
-          if (color > 100) {
-            return m.name === sorted[0].name;
-          }
-          return true;
-        });
+        
+        const ing = INGREDIENTS.malts[best.name];
+        const color = ing?.color || best.color || 2;
+        const weight = Math.max(1, Math.round(mcuNeeded / color));
+        extraWeights = [{ name: best.name, weight }];
       }
     }
+    
+    // 6. 检查OG，如果超标，减少基础麦芽
+    weights = [...baseWeights, ...midDarkWeights, ...veryDarkWeights, ...extraWeights];
+    let og = getOG(weights);
+    if (og > style.og.max) {
+      const excessPoints = (og - 1) * BrewLogic.BATCH_SIZE * 1000 - (targetOG - 1) * BrewLogic.BATCH_SIZE * 1000;
+      const baseTotalPPG = baseWeights.reduce((sum, w) => {
+        const ing = INGREDIENTS.malts[w.name];
+        return sum + (ing?.ppg || 35);
+      }, 0);
+      const reduce = excessPoints / (baseTotalPPG * BrewLogic.MASH_EFFICIENCY);
+      const perReduce = Math.max(0, Math.round(reduce / baseWeights.length));
+      
+      baseWeights = baseWeights.map(w => ({
+        name: w.name,
+        weight: Math.max(1, w.weight - perReduce)
+      }));
+    }
+    
+    // 7. 如果OG不够，增加基础麦芽
+    weights = [...baseWeights, ...midDarkWeights, ...veryDarkWeights, ...extraWeights];
+    og = getOG(weights);
+    if (og < style.og.min) {
+      const neededPoints = (targetOG - 1) * BrewLogic.BATCH_SIZE * 1000 - (og - 1) * BrewLogic.BATCH_SIZE * 1000;
+      const baseTotalPPG = baseWeights.reduce((sum, w) => {
+        const ing = INGREDIENTS.malts[w.name];
+        return sum + (ing?.ppg || 35);
+      }, 0);
+      const add = Math.max(1, Math.round(neededPoints / (baseTotalPPG * BrewLogic.MASH_EFFICIENCY)));
+      
+      baseWeights = baseWeights.map(w => ({
+        name: w.name,
+        weight: w.weight + add
+      }));
+    }
+    
+    // 最终合并（使用Map去重）
+    const weightMap = new Map();
+    baseWeights.forEach(w => weightMap.set(w.name, w.weight));
+    midDarkWeights.forEach(w => weightMap.set(w.name, w.weight));
+    veryDarkWeights.forEach(w => weightMap.set(w.name, w.weight));
+    extraWeights.forEach(w => weightMap.set(w.name, w.weight));
+    
+    game.state.selectedMalts = Array.from(weightMap.entries()).map(([name, weight]) => ({ name, weight }));
+    
     this.updateSelectedMalts();
   },
   
@@ -594,7 +675,7 @@ const UI = {
       const item = document.createElement('div');
       item.className = 'gallery-item';
       item.innerHTML = `
-        <div class="gallery-beer">🍺</div>
+        <div class="gallery-beer">🍀🍺</div>
         <div class="gallery-name">${beer.name || '未命名'}</div>
         <div class="gallery-style">${beer.styleName || '?'}</div>
         <div class="gallery-score">${beer.score}分</div>

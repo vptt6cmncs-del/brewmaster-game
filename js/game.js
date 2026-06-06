@@ -4,7 +4,7 @@ const game = {
   // 游戏状态
   state: {
     currentPage: 'cover',
-    currentMode: null, // 'apprentice', 'exam', 'free', null=经典模式
+    currentMode: null, // 'apprentice', 'exam', 'bar', null=经典模式
     selectedFamily: null,
     selectedStyle: null,
     brewer: null,
@@ -40,8 +40,14 @@ const game = {
       questionCount: 0
     },
     
-    // 自由酿造
-    freeStyle: null
+    // 酒吧推荐模式状态
+    bar: {
+      level: 1,
+      streak: 0,
+      bestStreak: 0,
+      currentCustomer: null,
+      customerCount: 0
+    }
   },
   
   // ===== 模式选择 =====
@@ -54,9 +60,9 @@ const game = {
     } else if (mode === 'exam') {
       this.toPage('exam');
       this.loadExamStats();
-    } else if (mode === 'free') {
-      this.toPage('free');
-      UI.renderFreeMode();
+    } else if (mode === 'bar') {
+      this.toPage('bar');
+      this.loadBarStats();
     }
   },
   
@@ -86,8 +92,8 @@ const game = {
       UI.renderApprenticeMode();
     } else if (pageId === 'exam') {
       this.loadExamStats();
-    } else if (pageId === 'free') {
-      UI.renderFreeMode();
+    } else if (pageId === 'bar') {
+      this.loadBarStats();
     }
     
     // 滚动到顶部
@@ -229,24 +235,17 @@ const game = {
     const style = correct.style;
     const paramsEl = document.getElementById('clue-params');
     paramsEl.innerHTML = `
-      <span class="clue-param">OG ${style.og.min}-${style.og.max}</span>
-      <span class="clue-param">IBU ${style.ibu.min}-${style.ibu.max}</span>
-      <span class="clue-param">ABV ${style.abv.min}-${style.abv.max}%</span>
-      <span class="clue-param">SRM ${style.srm.min}-${style.srm.max}</span>
+      <span class="clue-param">OG（初始比重）${style.og.min}-${style.og.max}</span>
+      <span class="clue-param">IBU（苦度）${style.ibu.min}-${style.ibu.max}</span>
+      <span class="clue-param">ABV（酒精度）${style.abv.min}-${style.abv.max}%</span>
+      <span class="clue-param">SRM（色度）${style.srm.min}-${style.srm.max}</span>
     `;
     
-    // 生成描述线索（去掉风格名称）
-    let desc = style.description;
-    // 随机隐藏一些信息
-    const hints = [
-      `这款啤酒的${style.og.min > 1.06 ? '酒精度较高' : style.og.min < 1.04 ? '酒精度较低' : '酒精度适中'}。`,
-      `苦度范围在${style.ibu.min}-${style.ibu.max} IBU之间。`,
-      `颜色为${BrewLogic.srmToColorName((style.srm.min + style.srm.max) / 2)}。`,
-      `主要使用${style.yeasts[0]?.name || '特定酵母'}发酵。`,
-      `适合在${style.fermentTemp.min}-${style.fermentTemp.max}°C下发酵。`
-    ];
-    // 随机选2-3个提示
-    const selectedHints = hints.sort(() => Math.random() - 0.5).slice(0, 2 + Math.floor(Math.random() * 2));
+    // 生成丰富的描述线索
+    const hints = this.generateExamHints(style);
+    // 根据等级决定提示数量：等级1给4-5个提示，等级越高提示越少
+    const hintCount = Math.max(3, 5 - Math.floor(this.state.exam.level / 3));
+    const selectedHints = hints.sort(() => Math.random() - 0.5).slice(0, hintCount);
     document.getElementById('clue-desc').innerHTML = selectedHints.join('<br>');
     
     // 显示选项
@@ -261,6 +260,119 @@ const game = {
     });
     
     window.scrollTo(0, 0);
+  },
+  
+  // 生成考试模式丰富的提示线索
+  generateExamHints(style) {
+    const hints = [];
+    const avgSRM = (style.srm.min + style.srm.max) / 2;
+    const avgIBU = (style.ibu.min + style.ibu.max) / 2;
+    const avgOG = (style.og.min + style.og.max) / 2;
+    const avgABV = (style.abv.min + style.abv.max) / 2;
+    
+    // 1. 基础参数提示（保留原有）
+    hints.push(`这款啤酒的酒精度${avgABV > 7 ? '较高' : avgABV < 4 ? '较低' : '适中'}，约${style.abv.min}-${style.abv.max}%（ABV）。`);
+    hints.push(`颜色呈${BrewLogic.srmToColorName(avgSRM)}，SRM（色度）范围${style.srm.min}-${style.srm.max}。`);
+    hints.push(`苦度${avgIBU > 50 ? '很高' : avgIBU > 30 ? '中等偏高' : avgIBU > 15 ? '中等' : '较低'}，IBU（苦度值）范围${style.ibu.min}-${style.ibu.max}。`);
+    
+    // 2. 酒体与口感（从OG/FG推断）
+    const bodyDesc = avgOG > 1.07 ? '酒体厚重饱满，口感浓郁' : avgOG > 1.05 ? '酒体中等偏饱满' : avgOG > 1.04 ? '酒体中等' : '酒体轻盈清爽';
+    const dryness = style.fg.max < 1.01 ? '收口非常干爽' : style.fg.max < 1.014 ? '收口较干爽' : style.fg.max < 1.02 ? '收口略带甜味' : '收口有明显甜感';
+    hints.push(`${bodyDesc}，${dryness}。`);
+    
+    // 3. 酒花风味（从hops数据提取）
+    if (style.hops && style.hops.length > 0) {
+      const hopNames = style.hops.map(h => h.name).slice(0, 3);
+      const aromaHops = style.hops.filter(h => h.type === 'aroma' || h.type === 'dual');
+      const bitterHops = style.hops.filter(h => h.type === 'bittering');
+      
+      if (aromaHops.length > 0 && bitterHops.length === 0) {
+        hints.push(`以香气型酒花为主，突出酒花芳香，常用${hopNames.join('、')}等。`);
+      } else if (bitterHops.length > 0 && aromaHops.length === 0) {
+        hints.push(`以苦味型酒花为主，苦味清晰直接。`);
+      } else if (aromaHops.length > 0 && bitterHops.length > 0) {
+        hints.push(`苦香平衡，既有苦味支撑又有香气表达，使用${hopNames.join('、')}等酒花。`);
+      } else {
+        hints.push(`使用${hopNames.join('、')}等酒花。`);
+      }
+      
+      // 酒花产地线索
+      const regions = [...new Set(style.hops.map(h => h.region).filter(r => r))];
+      if (regions.length === 1) {
+        hints.push(`酒花主要来自${regions[0]}。`);
+      } else if (regions.length > 1) {
+        hints.push(`酒花来自${regions.slice(0, 2).join('和')}等地。`);
+      }
+    }
+    
+    // 4. 酵母与香气特征
+    if (style.yeasts && style.yeasts.length > 0) {
+      const yeast = style.yeasts[0];
+      hints.push(`使用${yeast.name}发酵，发酵温度${style.fermentTemp.min}-${style.fermentTemp.max}°C。`);
+      if (yeast.esters) {
+        hints.push(`发酵带来${yeast.esters}等酯香特征。`);
+      }
+    }
+    
+    // 5. 麦芽特征
+    if (style.malts && style.malts.length > 0) {
+      const maltNames = style.malts.filter(m => m.default).map(m => m.name);
+      if (maltNames.length > 0) {
+        const hasWheat = maltNames.some(m => m.includes('小麦'));
+        const hasDark = maltNames.some(m => {
+          const ing = INGREDIENTS.malts[m.name] || { color: m.color || 2 };
+          return (ing.color || m.color || 2) > 40;
+        });
+        if (hasWheat) {
+          hints.push(`配方中含有小麦麦芽，带来独特的口感和浑浊度。`);
+        }
+        if (hasDark) {
+          hints.push(`使用深色麦芽，带来烘烤/焦糖风味。`);
+        }
+        if (!hasWheat && !hasDark) {
+          hints.push(`以基础麦芽为主，突出原料本身的纯净风味。`);
+        }
+      }
+    }
+    
+    // 6. 特殊添加物
+    if (style.optional && style.optional.length > 0) {
+      const opts = style.optional.slice(0, 2);
+      hints.push(`可以尝试添加${opts.join('、')}等增味原料。`);
+    }
+    
+    // 7. 风格描述关键词（从description提取）
+    if (style.description) {
+      const desc = style.description;
+      // 提取描述中的风味关键词
+      const flavorKeywords = [];
+      if (desc.includes('酒花') || desc.includes('苦') || desc.includes('IPA')) flavorKeywords.push('酒花特征突出');
+      if (desc.includes('麦芽') || desc.includes('甜') || desc.includes('焦糖')) flavorKeywords.push('麦芽风味主导');
+      if (desc.includes('酵母') || desc.includes('酯') || desc.includes('香')) flavorKeywords.push('酵母酯香丰富');
+      if (desc.includes('清爽') || desc.includes('干净') || desc.includes(' crisp')) flavorKeywords.push('口感清爽干净');
+      if (desc.includes('浓郁') || desc.includes('厚重') || desc.includes('饱满')) flavorKeywords.push('风味浓郁饱满');
+      if (desc.includes('酸') || desc.includes('野菌') || desc.includes('funk')) flavorKeywords.push('带有酸味或野菌特征');
+      if (desc.includes('烟熏') || desc.includes('培根')) flavorKeywords.push('带有独特的烟熏风味');
+      if (desc.includes('香料') || desc.includes('香菜') || desc.includes('橙皮')) flavorKeywords.push('带有香料风味');
+      
+      if (flavorKeywords.length > 0) {
+        hints.push(`风味特征：${flavorKeywords.slice(0, 2).join('，')}。`);
+      }
+    }
+    
+    // 8. 发酵时间线索
+    if (style.fermentTime && style.fermentTime.min > 20) {
+      hints.push(`需要长时间发酵/陈酿（${style.fermentTime.min}-${style.fermentTime.max}天），适合耐心等待。`);
+    }
+    
+    // 9. 拉格vs艾尔线索
+    if (style.fermentTemp && style.fermentTemp.max <= 14) {
+      hints.push(`低温发酵（${style.fermentTemp.min}-${style.fermentTemp.max}°C），属于拉格类型。`);
+    } else if (style.fermentTemp && style.fermentTemp.min >= 18) {
+      hints.push(`中高温发酵（${style.fermentTemp.min}-${style.fermentTemp.max}°C），属于艾尔类型。`);
+    }
+    
+    return hints;
   },
   
   answerExam(selectedIdx) {
@@ -314,77 +426,318 @@ const game = {
     document.getElementById('btn-next-question').style.display = 'block';
   },
   
-  // ===== 自由酿造模式 =====
-  startFreeBrew() {
-    // 获取用户选择
-    const selectedStyleId = this.state.freeStyle?.id;
-    const customOG = parseFloat(document.getElementById('free-og')?.value || 1.050);
-    const customIBU = parseInt(document.getElementById('free-ibu')?.value || 30);
-    const customSRM = parseInt(document.getElementById('free-srm')?.value || 10);
-    const customABV = parseFloat(document.getElementById('free-abv')?.value || 5.0);
+  // ===== 酒吧推荐模式 =====
+  loadBarStats() {
+    const stats = JSON.parse(localStorage.getItem('brewmaster_bar') || '{"level":1,"bestStreak":0}');
+    this.state.bar.level = stats.level || 1;
+    this.state.bar.bestStreak = stats.bestStreak || 0;
+    this.state.bar.streak = 0;
     
-    // 创建自定义风格或复制选中风格
-    let style;
-    if (selectedStyleId) {
-      // 找到选中的风格
-      for (const fam in BJCP_STYLES) {
-        const found = BJCP_STYLES[fam].styles.find(s => s.id === selectedStyleId);
-        if (found) {
-          style = JSON.parse(JSON.stringify(found)); // 深拷贝
-          break;
-        }
+    document.getElementById('bar-level').textContent = this.state.bar.level;
+    document.getElementById('bar-streak').textContent = 0;
+    document.getElementById('bar-best').textContent = this.state.bar.bestStreak;
+  },
+  
+  saveBarStats() {
+    localStorage.setItem('brewmaster_bar', JSON.stringify({
+      level: this.state.bar.level,
+      bestStreak: this.state.bar.bestStreak
+    }));
+  },
+  
+  startBarMode() {
+    Sound.playClick();
+    this.state.bar.customerCount = 0;
+    this.state.bar.streak = 0;
+    this.nextBarCustomer();
+  },
+  
+  nextBarCustomer() {
+    Sound.playClick();
+    const { allStyles } = this.getApprenticeProgress();
+    if (allStyles.length === 0) return;
+    
+    // 根据等级选择难度
+    const level = this.state.bar.level;
+    const poolSize = Math.min(4 + level * 2, allStyles.length);
+    const pool = allStyles.slice(0, poolSize);
+    
+    // 随机生成客人偏好
+    const customer = this.generateCustomerRequest(pool);
+    
+    // 计算每个风格的匹配度（用于确定最佳答案和显示匹配度）
+    const matches = pool.map(item => ({
+      ...item,
+      matchScore: this.calculateBarMatch(item.style, customer)
+    })).sort((a, b) => b.matchScore - a.matchScore);
+    
+    const bestMatch = matches[0];
+    
+    // 选择4-6个选项（包含最佳匹配）
+    const optionCount = Math.min(4 + Math.floor(level / 2), 8);
+    const options = [bestMatch];
+    const used = new Set([bestMatch.style.id]);
+    
+    // 添加一些其他风格作为干扰项
+    while (options.length < optionCount && options.length < matches.length) {
+      const candidate = matches[Math.floor(Math.random() * matches.length)];
+      if (!used.has(candidate.style.id)) {
+        used.add(candidate.style.id);
+        options.push(candidate);
       }
     }
     
-    // 如果没有选中风格，创建完全自定义的
-    if (!style) {
-      const targetFG = customOG - (customABV / 131.25);
-      style = {
-        id: 'FREE',
-        name: '自由酿造',
-        nameEn: 'Free Style Brew',
-        description: '完全自定义的啤酒配方',
-        og: { min: customOG * 0.9, max: customOG * 1.1, target: customOG },
-        fg: { min: targetFG * 0.9, max: targetFG * 1.1, target: targetFG },
-        ibu: { min: customIBU * 0.7, max: customIBU * 1.3, target: customIBU },
-        srm: { min: customSRM * 0.7, max: customSRM * 1.3, target: customSRM },
-        abv: { min: customABV * 0.8, max: customABV * 1.2, target: customABV },
-        mashTemp: { min: 60, max: 70, ideal: 65 },
-        mashTime: { min: 60, max: 90, ideal: 60 },
-        boilTime: { min: 60, max: 90, ideal: 60 },
-        fermentTemp: { min: 10, max: 25, ideal: 18 },
-        fermentTime: { min: 7, max: 21, ideal: 14 },
-        malts: Object.keys(INGREDIENTS.malts).map(name => ({
-          name,
-          color: INGREDIENTS.malts[name].color,
-          gravity: INGREDIENTS.malts[name].ppg / 1000 + 1,
-          default: false
-        })),
-        hops: Object.keys(INGREDIENTS.hops).map(name => ({
-          name,
-          alpha: INGREDIENTS.hops[name].alpha,
-          type: INGREDIENTS.hops[name].type,
-          region: INGREDIENTS.hops[name].region
-        })),
-        yeasts: Object.keys(INGREDIENTS.yeasts).map(name => ({
-          name,
-          attenuation: INGREDIENTS.yeasts[name].attenuation,
-          tempMin: INGREDIENTS.yeasts[name].tempMin,
-          tempMax: INGREDIENTS.yeasts[name].tempMax
-        })),
-        optional: ['水果', '香料', '咖啡', '香草', '橡木片'],
-        tips: ['自由酿造没有固定规则，尽情发挥创意！']
-      };
+    // 打乱选项顺序
+    const shuffledOptions = options.sort(() => Math.random() - 0.5);
+    
+    this.state.bar.currentCustomer = { customer, options: shuffledOptions, bestMatch };
+    this.state.bar.customerCount++;
+    
+    // 显示客人
+    document.getElementById('bar-intro').style.display = 'none';
+    document.getElementById('bar-question').style.display = 'block';
+    document.getElementById('btn-next-customer').style.display = 'none';
+    document.getElementById('bar-feedback').style.display = 'none';
+    document.getElementById('bar-feedback').className = 'bar-feedback';
+    
+    // 设置客人信息
+    const avatars = ['👨', '👩', '👴', '👵', '👱', '👧', '🧔', '👳', '🧕', '👮', '👷', '💂', '🕵️', '👩‍⚕️', '👨‍🍳', '👩‍🎓', '👨‍💼', '👩‍🔬'];
+    const names = ['老张', '小李', '王哥', '刘姐', '陈总', '赵师傅', '孙同学', '周医生', '吴老板', '郑老师', '钱经理', '冯工程师', '何艺术家', '许摄影师', '韩旅行者', '杨作家', '朱程序员', '秦设计师'];
+    
+    document.getElementById('customer-avatar').textContent = avatars[Math.floor(Math.random() * avatars.length)];
+    document.getElementById('customer-name').textContent = names[Math.floor(Math.random() * names.length)];
+    
+    // 构建客人请求文本
+    let requestText = '';
+    if (customer.mood === 'happy') requestText = '今天心情不错，想喝一杯！';
+    else if (customer.mood === 'tired') requestText = '工作累了，想放松一下。';
+    else if (customer.mood === 'celebrating') requestText = '今天有好事，想庆祝一下！';
+    else if (customer.mood === 'curious') requestText = '听说你们这里有特色酒，想试试。';
+    else requestText = '随便看看，有什么推荐的吗？';
+    
+    document.getElementById('customer-request').textContent = requestText;
+    
+    // 显示偏好标签
+    const prefEl = document.getElementById('customer-preferences');
+    prefEl.innerHTML = customer.preferences.map(p => `<span class="pref-tag">${p}</span>`).join('');
+    
+    // 显示酒单
+    const menuEl = document.getElementById('menu-list');
+    menuEl.innerHTML = '';
+    shuffledOptions.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'menu-item';
+      const family = BJCP_STYLES[opt.family];
+      btn.innerHTML = `
+        <div class="menu-item-header">
+          <span class="menu-emoji">${family?.emoji || '🍺'}</span>
+          <div class="menu-item-info">
+            <div class="menu-item-name">${opt.style.name}</div>
+            <div class="menu-item-en">${opt.style.nameEn}</div>
+          </div>
+        </div>
+        <div class="menu-item-params">
+          <span>ABV ${opt.style.abv.min}-${opt.style.abv.max}%</span>
+          <span>IBU ${opt.style.ibu.min}-${opt.style.ibu.max}</span>
+          <span>SRM ${opt.style.srm.min}-${opt.style.srm.max}</span>
+        </div>
+      `;
+      btn.onclick = () => this.answerBar(idx);
+      menuEl.appendChild(btn);
+    });
+    
+    window.scrollTo(0, 0);
+  },
+  
+  generateCustomerRequest(pool) {
+    const preferences = [];
+    const restrictions = [];
+    
+    // 随机选择1-3个偏好
+    const prefCount = 1 + Math.floor(Math.random() * 3);
+    
+    // 颜色偏好
+    const colorPrefs = [
+      { label: '颜色浅一点', check: (s) => s.srm.max <= 8 },
+      { label: '颜色深一些', check: (s) => s.srm.min >= 15 },
+      { label: '不要黑色的', check: (s) => s.srm.max <= 25 },
+      { label: '喜欢黑啤', check: (s) => s.srm.min >= 25 }
+    ];
+    
+    // 苦度偏好
+    const ibuPrefs = [
+      { label: '不要太苦', check: (s) => s.ibu.max <= 25 },
+      { label: '喜欢苦味', check: (s) => s.ibu.min >= 30 },
+      { label: '苦度适中', check: (s) => s.ibu.min >= 15 && s.ibu.max <= 40 }
+    ];
+    
+    // 酒精度偏好
+    const abvPrefs = [
+      { label: '酒精度低一点', check: (s) => s.abv.max <= 4.5 },
+      { label: '想要烈一点的', check: (s) => s.abv.min >= 6 },
+      { label: '适中就好', check: (s) => s.abv.min >= 4 && s.abv.max <= 6.5 }
+    ];
+    
+    // 风味偏好
+    const flavorPrefs = [
+      { label: '喜欢酒花香气', check: (s) => s.hops?.some(h => h.type === 'aroma' || h.type === 'dual') },
+      { label: '喜欢麦芽甜味', check: (s) => s.malts?.some(m => m.name.includes('焦糖') || m.name.includes('慕尼黑')) },
+      { label: '喜欢清爽口感', check: (s) => s.fg?.max <= 1.012 || s.description?.includes('清爽') },
+      { label: '喜欢浓郁口感', check: (s) => s.og?.min >= 1.060 || s.description?.includes('浓郁') },
+      { label: '喜欢果香', check: (s) => s.yeasts?.some(y => y.esters?.includes('果') || y.esters?.includes('香蕉')) },
+      { label: '喜欢酸味', check: (s) => s.description?.includes('酸') || s.id?.startsWith('23') },
+      { label: '小麦啤酒', check: (s) => s.malts?.some(m => m.name.includes('小麦')) },
+      { label: '拉格类型', check: (s) => s.fermentTemp?.max <= 14 },
+      { label: '艾尔类型', check: (s) => s.fermentTemp?.min >= 18 }
+    ];
+    
+    // 场景偏好
+    const scenePrefs = [
+      { label: '适合夏天喝', check: (s) => s.abv?.max <= 5 && (s.ibu?.max >= 20 || s.description?.includes('清爽')) },
+      { label: '适合冬天喝', check: (s) => s.abv?.min >= 6 || s.srm?.min >= 15 },
+      { label: '适合配餐', check: (s) => s.ibu?.min >= 15 && s.ibu?.max <= 35 && s.abv?.max <= 6 },
+      { label: '适合独饮', check: (s) => s.abv?.min >= 6 || s.description?.includes('复杂') }
+    ];
+    
+    const allPrefs = [...colorPrefs, ...ibuPrefs, ...abvPrefs, ...flavorPrefs, ...scenePrefs];
+    
+    // 确保至少有一些偏好能匹配到池中的风格
+    const validPrefs = allPrefs.filter(p => pool.some(item => p.check(item.style)));
+    
+    // 随机选择偏好
+    const selected = [];
+    while (selected.length < prefCount && validPrefs.length > 0) {
+      const idx = Math.floor(Math.random() * validPrefs.length);
+      const pref = validPrefs[idx];
+      if (!selected.find(s => s.label === pref.label)) {
+        selected.push(pref);
+      }
+      validPrefs.splice(idx, 1);
     }
     
-    this.state.selectedStyle = style;
-    this.state.selectedFamily = 'free';
-    this.state.currentMode = 'free';
-    this.state.brewer = { name: '疯狂科学家', avatar: '🔬', catchphrase: '打破规则，创造传奇！' };
+    const mood = ['happy', 'tired', 'celebrating', 'curious', 'neutral'][Math.floor(Math.random() * 5)];
     
-    this.state.step = 0;
-    this.resetBrewState();
-    this.toPage('brewing');
+    return {
+      mood,
+      preferences: selected.map(s => s.label),
+      checks: selected.map(s => s.check)
+    };
+  },
+  
+  calculateBarMatch(style, customer) {
+    let score = 50; // 基础分
+    
+    // 根据每个偏好计算匹配度
+    customer.checks.forEach(check => {
+      if (check(style)) {
+        score += 25; // 每个匹配偏好加25分
+      } else {
+        score -= 10; // 不匹配减10分
+      }
+    });
+    
+    // 确保分数在0-100之间
+    return Math.max(0, Math.min(100, score));
+  },
+  
+  answerBar(selectedIdx) {
+    const customer = this.state.bar.currentCustomer;
+    if (!customer) return;
+    
+    const selected = customer.options[selectedIdx];
+    const bestMatch = customer.bestMatch;
+    const matchScore = this.calculateBarMatch(selected.style, customer.customer);
+    
+    const isBest = selected.style.id === bestMatch.style.id;
+    const isGood = matchScore >= 70;
+    const isOk = matchScore >= 40;
+    
+    // 禁用所有按钮
+    document.querySelectorAll('.menu-item').forEach((btn, idx) => {
+      btn.classList.add('disabled');
+      if (idx === selectedIdx) btn.classList.add('selected');
+      // 标记最佳答案
+      const opt = customer.options[idx];
+      if (opt.style.id === bestMatch.style.id) {
+        btn.classList.add('best-match');
+      }
+    });
+    
+    // 显示反馈
+    const feedback = document.getElementById('bar-feedback');
+    feedback.style.display = 'block';
+    
+    if (isBest) {
+      Sound.playSuccess();
+      this.state.bar.streak++;
+      if (this.state.bar.streak > this.state.bar.bestStreak) {
+        this.state.bar.bestStreak = this.state.bar.streak;
+      }
+      
+      // 升级检查
+      if (this.state.bar.streak >= this.state.bar.level * 3) {
+        this.state.bar.level++;
+        feedback.className = 'bar-feedback excellent';
+        feedback.innerHTML = `
+          <div class="feedback-title">🎉 完美推荐！</div>
+          <div class="feedback-text">客人非常满意！这就是他/她想要的！</div>
+          <div class="match-score">匹配度: ${matchScore}%</div>
+          <div class="level-up">⭐ 升级到调酒师等级 ${this.state.bar.level}！</div>
+        `;
+      } else {
+        feedback.className = 'bar-feedback excellent';
+        feedback.innerHTML = `
+          <div class="feedback-title">😍 太棒了！</div>
+          <div class="feedback-text">客人非常喜欢你的推荐！</div>
+          <div class="match-score">匹配度: ${matchScore}%</div>
+          <div class="streak">连续好评 ${this.state.bar.streak} 次！</div>
+        `;
+      }
+    } else if (isGood) {
+      Sound.playBubble();
+      this.state.bar.streak++;
+      if (this.state.bar.streak > this.state.bar.bestStreak) {
+        this.state.bar.bestStreak = this.state.bar.streak;
+      }
+      feedback.className = 'bar-feedback good';
+      feedback.innerHTML = `
+        <div class="feedback-title">😊 不错！</div>
+        <div class="feedback-text">客人觉得这款酒还可以，虽然不是最理想的。</div>
+        <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
+        <div class="streak">连续好评 ${this.state.bar.streak} 次！</div>
+      `;
+    } else if (isOk) {
+      Sound.playWarning();
+      this.state.bar.streak = 0;
+      feedback.className = 'bar-feedback ok';
+      feedback.innerHTML = `
+        <div class="feedback-title">😐 一般般</div>
+        <div class="feedback-text">客人勉强接受了，但似乎不太满意。</div>
+        <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
+      `;
+    } else {
+      Sound.playWarning();
+      this.state.bar.streak = 0;
+      feedback.className = 'bar-feedback bad';
+      feedback.innerHTML = `
+        <div class="feedback-title">😞 不太合适</div>
+        <div class="feedback-text">客人觉得这款酒不太符合他/她的期望。</div>
+        <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
+        <div class="hint">客人想要: ${customer.customer.preferences.join('、')}</div>
+      `;
+    }
+    
+    // 更新统计
+    document.getElementById('bar-streak').textContent = this.state.bar.streak;
+    document.getElementById('bar-level').textContent = this.state.bar.level;
+    document.getElementById('bar-best').textContent = this.state.bar.bestStreak;
+    this.saveBarStats();
+    
+    // 显示下一位客人按钮
+    document.getElementById('btn-next-customer').style.display = 'block';
   },
   
   // ===== 经典模式（原有功能）=====
@@ -526,7 +879,7 @@ const game = {
               rect.left - containerRect.left + rect.width / 2,
               rect.top - containerRect.top + rect.height / 2,
               'malt',
-              { color: '#D4A017', size: 8 }
+              { color: '#5B8C3A', size: 8 }
             );
           }
         }
@@ -789,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  console.log('🍺 精酿啤酒酿造师 已加载');
+  console.log('🍀🍺 Hoppy Go Lucky 已加载');
 });
 
 // 导出

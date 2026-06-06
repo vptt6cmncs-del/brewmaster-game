@@ -48,7 +48,7 @@ const Animations = {
       vx: (Math.random() - 0.5) * (options.speed || 2),
       vy: (Math.random() - 0.5) * (options.speed || 2) - (options.rise || 0),
       size: options.size || 4,
-      color: options.color || '#D4A017',
+      color: options.color || '#5B8C3A',
       alpha: 1,
       life: options.life || 60,
       maxLife: options.life || 60,
@@ -184,7 +184,7 @@ const Animations = {
     this.clear();
     this.animating = true;
     
-    const colors = ['#D4A017', '#8B6914', '#C4956A', '#A0522D', '#CD853F'];
+    const colors = ['#5B8C3A', '#8BC34A', '#8BC34A', '#33691E', '#689F38'];
     const w = this.canvas.width;
     const h = this.canvas.height;
     
@@ -313,7 +313,7 @@ const Animations = {
           h * 0.7 + Math.random() * h * 0.2,
           'bubble',
           {
-            color: `rgba(212, 160, 23, ${0.3 + Math.random() * 0.4})`,
+            color: `rgba(91, 140, 58, ${0.3 + Math.random() * 0.4})`,
             size: 3 + Math.random() * 8,
             rise: 0,
             speed: 0.3,
@@ -374,7 +374,7 @@ const Animations = {
         Sound.playDrop();
         
         const isFruit = ['樱桃', '覆盆子', '桃子', '百香果', '橙子'].includes(item);
-        const color = fruitColors[item] || '#D4A017';
+        const color = fruitColors[item] || '#5B8C3A';
         
         this.particles.push(this.createParticle(
           w * 0.3 + Math.random() * w * 0.4,

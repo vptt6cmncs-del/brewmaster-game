@@ -117,7 +117,7 @@ const BrewLogic = {
   // 获取SRM对应的颜色CSS
   srmToColor(srm) {
     if (srm <= 3) return '#F4D03F'; // 淡稻草
-    if (srm <= 5) return '#D4A017'; // 金色
+    if (srm <= 5) return '#F5A623'; // 金色
     if (srm <= 7) return '#B8860B'; // 琥珀浅
     if (srm <= 14) return '#8B4513'; // 琥珀
     if (srm <= 20) return '#654321'; // 铜色

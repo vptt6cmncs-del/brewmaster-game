@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>精酿啤酒酿造师 - Craft Beer Brewmaster</title>
+  <title>Hoppy Go Lucky - 啤酒酿造小游戏</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,11 +14,11 @@
     </div>
     <div class="cover-content">
       <div class="logo">
-        <div class="logo-icon">🍺</div>
-        <h1>精酿啤酒酿造师</h1>
-        <p class="subtitle">Craft Beer Brewmaster</p>
+        <div class="logo-icon">🍀🍺</div>
+        <h1>Hoppy Go Lucky</h1>
+        <p class="subtitle">酒花与幸运 · 酿造你的快乐</p>
       </div>
-      <p class="tagline">从麦芽到佳酿，体验真实酿酒工艺</p>
+      <p class="tagline">从麦芽到佳酿，每一步都是小冒险！</p>
       <div class="mode-select">
         <h3>选择游戏模式</h3>
         <button class="btn-mode" onclick="game.selectMode('apprentice')">
@@ -35,18 +35,18 @@
             <div class="mode-desc">盲品识别风格，测试你的BJCP知识</div>
           </div>
         </button>
-        <button class="btn-mode" onclick="game.selectMode('free')">
-          <span class="mode-icon">🔬</span>
+        <button class="btn-mode" onclick="game.selectMode('bar')">
+          <span class="mode-icon">🍻</span>
           <div class="mode-info">
-            <div class="mode-name">自由酿造</div>
-            <div class="mode-desc">无限制实验，创造属于你的配方</div>
+            <div class="mode-name">酒吧推荐</div>
+            <div class="mode-desc">根据客人喜好，推荐最合适的啤酒风格</div>
           </div>
         </button>
       </div>
       <button class="btn-secondary" onclick="game.toPage('gallery')">
         <span>📷</span> 我的酒窖
       </button>
-      <p class="credit">基于 BJCP 2021 啤酒风格指南</p>
+      <p class="credit">基于 BJCP 2021 啤酒风格指南 · 酿造快乐，分享幸运 🍀</p>
     </div>
   </div>
 
@@ -113,45 +113,54 @@
     </div>
   </div>
 
-  <!-- 自由酿造模式页 -->
-  <div id="page-free" class="page">
+  <!-- 酒吧推荐模式页 -->
+  <div id="page-bar" class="page">
     <div class="page-header">
       <button class="btn-back" onclick="game.toPage('cover')">←</button>
-      <h2>🔬 自由酿造</h2>
+      <h2>🍻 酒吧推荐</h2>
     </div>
     <div class="page-body">
-      <p class="hint">不受风格限制，自由组合原料创造属于你的啤酒！</p>
-      <div class="free-style-config">
-        <div class="panel">
-          <h4>目标风格（可选）</h4>
-          <p class="sub-hint">选择一个参考风格，或完全自由发挥</p>
-          <div class="style-selector-free" id="style-selector-free"></div>
-        </div>
-        <div class="panel">
-          <h4>自定义参数</h4>
-          <div class="custom-params">
-            <div class="param-input">
-              <label>目标 OG（初始比重）</label>
-              <input type="number" id="free-og" value="1.050" step="0.001" min="1.020" max="1.150">
-            </div>
-            <div class="param-input">
-              <label>目标 IBU（苦度）</label>
-              <input type="number" id="free-ibu" value="30" step="1" min="0" max="120">
-            </div>
-            <div class="param-input">
-              <label>目标 SRM（色度）</label>
-              <input type="number" id="free-srm" value="10" step="1" min="1" max="50">
-            </div>
-            <div class="param-input">
-              <label>目标 ABV%（酒精度）</label>
-              <input type="number" id="free-abv" value="5.0" step="0.1" min="2" max="15">
-            </div>
+      <div class="bar-intro" id="bar-intro">
+        <div class="bar-icon">🍻</div>
+        <h3>欢迎来到精酿酒吧！</h3>
+        <p>客人会告诉你他们的喜好和限制，你需要从酒单中推荐最合适的BJCP风格。</p>
+        <p>匹配度越高，小费越多！</p>
+        <div class="bar-stats" id="bar-stats">
+          <div class="stat-box">
+            <div class="stat-value" id="bar-level">1</div>
+            <div class="stat-label">调酒师等级</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="bar-streak">0</div>
+            <div class="stat-label">连续好评</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="bar-best">0</div>
+            <div class="stat-label">最高连胜</div>
           </div>
         </div>
+        <button class="btn-primary" onclick="game.startBarMode()">
+          <span>🍺</span> 开始营业
+        </button>
       </div>
-      <button class="btn-primary" onclick="game.startFreeBrew()">
-        <span>🧪</span> 开始自由酿造
-      </button>
+      <div class="bar-question" id="bar-question" style="display:none;">
+        <div class="customer-card" id="customer-card">
+          <div class="customer-avatar" id="customer-avatar">👤</div>
+          <div class="customer-dialog">
+            <div class="customer-name" id="customer-name">客人</div>
+            <div class="customer-request" id="customer-request"></div>
+            <div class="customer-preferences" id="customer-preferences"></div>
+          </div>
+        </div>
+        <div class="menu-section">
+          <h4>📋 酒单（选择一款推荐）</h4>
+          <div class="menu-list" id="menu-list"></div>
+        </div>
+        <div class="bar-feedback" id="bar-feedback"></div>
+        <button class="btn-primary" id="btn-next-customer" style="display:none;" onclick="game.nextBarCustomer()">
+          下一位客人 →
+        </button>
+      </div>
     </div>
   </div>
 
@@ -380,7 +389,7 @@
         <div class="params-comparison">
           <h4>参数对比</h4>
           <div class="param-row">
-            <span class="param-name">OG</span>
+            <span class="param-name">OG（初始比重）</span>
             <div class="param-bar">
               <div class="param-target" id="og-target"></div>
               <div class="param-actual" id="og-actual"></div>
@@ -388,7 +397,7 @@
             <span class="param-val" id="og-val"></span>
           </div>
           <div class="param-row">
-            <span class="param-name">FG</span>
+            <span class="param-name">FG（终点比重）</span>
             <div class="param-bar">
               <div class="param-target" id="fg-target"></div>
               <div class="param-actual" id="fg-actual"></div>
@@ -396,7 +405,7 @@
             <span class="param-val" id="fg-val"></span>
           </div>
           <div class="param-row">
-            <span class="param-name">IBU</span>
+            <span class="param-name">IBU（苦度）</span>
             <div class="param-bar">
               <div class="param-target" id="ibu-target"></div>
               <div class="param-actual" id="ibu-actual"></div>
@@ -404,7 +413,7 @@
             <span class="param-val" id="ibu-val"></span>
           </div>
           <div class="param-row">
-            <span class="param-name">SRM</span>
+            <span class="param-name">SRM（色度）</span>
             <div class="param-bar">
               <div class="param-target" id="srm-target"></div>
               <div class="param-actual" id="srm-actual"></div>
@@ -412,7 +421,7 @@
             <span class="param-val" id="srm-val"></span>
           </div>
           <div class="param-row">
-            <span class="param-name">ABV</span>
+            <span class="param-name">ABV（酒精度）</span>
             <div class="param-bar">
               <div class="param-target" id="abv-target"></div>
               <div class="param-actual" id="abv-actual"></div>
