@@ -46,8 +46,16 @@ const game = {
       streak: 0,
       bestStreak: 0,
       currentCustomer: null,
-      customerCount: 0
-    }
+      customerCount: 0,
+      totalTips: 0
+    },
+    
+    // PWA安装提示
+    installPrompt: null,
+    
+    // 酒窖选择模式
+    gallerySelectMode: false,
+    gallerySelected: []
   },
   
   // ===== 模式选择 =====
@@ -428,20 +436,23 @@ const game = {
   
   // ===== 酒吧推荐模式 =====
   loadBarStats() {
-    const stats = JSON.parse(localStorage.getItem('brewmaster_bar') || '{"level":1,"bestStreak":0}');
+    const stats = JSON.parse(localStorage.getItem('brewmaster_bar') || '{"level":1,"bestStreak":0,"totalTips":0}');
     this.state.bar.level = stats.level || 1;
     this.state.bar.bestStreak = stats.bestStreak || 0;
+    this.state.bar.totalTips = stats.totalTips || 0;
     this.state.bar.streak = 0;
     
     document.getElementById('bar-level').textContent = this.state.bar.level;
     document.getElementById('bar-streak').textContent = 0;
     document.getElementById('bar-best').textContent = this.state.bar.bestStreak;
+    document.getElementById('bar-tips').textContent = this.state.bar.totalTips;
   },
   
   saveBarStats() {
     localStorage.setItem('brewmaster_bar', JSON.stringify({
       level: this.state.bar.level,
-      bestStreak: this.state.bar.bestStreak
+      bestStreak: this.state.bar.bestStreak,
+      totalTips: this.state.bar.totalTips
     }));
   },
   
@@ -674,6 +685,9 @@ const game = {
         this.state.bar.bestStreak = this.state.bar.streak;
       }
       
+      const tip = this.calculateTip(matchScore, true);
+      this.state.bar.totalTips += tip;
+      
       // 升级检查
       if (this.state.bar.streak >= this.state.bar.level * 3) {
         this.state.bar.level++;
@@ -682,6 +696,8 @@ const game = {
           <div class="feedback-title">🎉 完美推荐！</div>
           <div class="feedback-text">客人非常满意！这就是他/她想要的！</div>
           <div class="match-score">匹配度: ${matchScore}%</div>
+          <div class="tip-amount">💰 小费 +${tip}元</div>
+          <div class="tip-total">累计收入: ${this.state.bar.totalTips}元</div>
           <div class="level-up">⭐ 升级到调酒师等级 ${this.state.bar.level}！</div>
         `;
       } else {
@@ -690,6 +706,8 @@ const game = {
           <div class="feedback-title">😍 太棒了！</div>
           <div class="feedback-text">客人非常喜欢你的推荐！</div>
           <div class="match-score">匹配度: ${matchScore}%</div>
+          <div class="tip-amount">💰 小费 +${tip}元</div>
+          <div class="tip-total">累计收入: ${this.state.bar.totalTips}元</div>
           <div class="streak">连续好评 ${this.state.bar.streak} 次！</div>
         `;
       }
@@ -699,32 +717,44 @@ const game = {
       if (this.state.bar.streak > this.state.bar.bestStreak) {
         this.state.bar.bestStreak = this.state.bar.streak;
       }
+      const tip = this.calculateTip(matchScore, false);
+      this.state.bar.totalTips += tip;
       feedback.className = 'bar-feedback good';
       feedback.innerHTML = `
         <div class="feedback-title">😊 不错！</div>
         <div class="feedback-text">客人觉得这款酒还可以，虽然不是最理想的。</div>
         <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="tip-amount">💰 小费 +${tip}元</div>
+        <div class="tip-total">累计收入: ${this.state.bar.totalTips}元</div>
         <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
         <div class="streak">连续好评 ${this.state.bar.streak} 次！</div>
       `;
     } else if (isOk) {
       Sound.playWarning();
       this.state.bar.streak = 0;
+      const tip = this.calculateTip(matchScore, false);
+      this.state.bar.totalTips += tip;
       feedback.className = 'bar-feedback ok';
       feedback.innerHTML = `
         <div class="feedback-title">😐 一般般</div>
         <div class="feedback-text">客人勉强接受了，但似乎不太满意。</div>
         <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="tip-amount">💰 小费 +${tip}元</div>
+        <div class="tip-total">累计收入: ${this.state.bar.totalTips}元</div>
         <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
       `;
     } else {
       Sound.playWarning();
       this.state.bar.streak = 0;
+      const tip = this.calculateTip(matchScore, false);
+      this.state.bar.totalTips += tip;
       feedback.className = 'bar-feedback bad';
       feedback.innerHTML = `
         <div class="feedback-title">😞 不太合适</div>
         <div class="feedback-text">客人觉得这款酒不太符合他/她的期望。</div>
         <div class="match-score">匹配度: ${matchScore}%</div>
+        <div class="tip-amount">💰 小费 +${tip}元</div>
+        <div class="tip-total">累计收入: ${this.state.bar.totalTips}元</div>
         <div class="hint">最佳推荐是 <strong>${bestMatch.style.name}</strong></div>
         <div class="hint">客人想要: ${customer.customer.preferences.join('、')}</div>
       `;
@@ -734,6 +764,7 @@ const game = {
     document.getElementById('bar-streak').textContent = this.state.bar.streak;
     document.getElementById('bar-level').textContent = this.state.bar.level;
     document.getElementById('bar-best').textContent = this.state.bar.bestStreak;
+    document.getElementById('bar-tips').textContent = this.state.bar.totalTips;
     this.saveBarStats();
     
     // 显示下一位客人按钮
@@ -1122,6 +1153,120 @@ const game = {
   downloadShareImage() {
     Sound.playClick();
     Share.download();
+  },
+  
+  // ===== PWA 安装 =====
+  installPWA() {
+    if (this.state.installPrompt) {
+      this.state.installPrompt.prompt();
+      this.state.installPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('用户已安装到桌面');
+        }
+        this.state.installPrompt = null;
+        const btn = document.getElementById('btn-install');
+        if (btn) btn.style.display = 'none';
+      });
+    }
+  },
+  
+  // ===== 酒窖管理 =====
+  toggleGallerySelect() {
+    this.state.gallerySelectMode = !this.state.gallerySelectMode;
+    this.state.gallerySelected = [];
+    UI.renderGallery();
+    
+    const btnText = document.getElementById('select-mode-text');
+    if (btnText) {
+      btnText.textContent = this.state.gallerySelectMode ? '✓ 完成' : '✓ 多选';
+    }
+  },
+  
+  toggleGalleryItem(id) {
+    if (!this.state.gallerySelectMode) return;
+    
+    const idx = this.state.gallerySelected.indexOf(id);
+    if (idx >= 0) {
+      this.state.gallerySelected.splice(idx, 1);
+    } else {
+      this.state.gallerySelected.push(id);
+    }
+    UI.renderGallery();
+  },
+  
+  deleteSelectedGallery() {
+    if (this.state.gallerySelected.length === 0) {
+      alert('请先选择要删除的记录');
+      return;
+    }
+    
+    if (!confirm(`确定要删除选中的 ${this.state.gallerySelected.length} 条记录吗？`)) return;
+    
+    let history = JSON.parse(localStorage.getItem('brewmaster_history') || '[]');
+    history = history.filter(beer => !this.state.gallerySelected.includes(beer.id));
+    localStorage.setItem('brewmaster_history', JSON.stringify(history));
+    
+    this.state.gallerySelected = [];
+    this.state.gallerySelectMode = false;
+    UI.renderGallery();
+    
+    const btnText = document.getElementById('select-mode-text');
+    if (btnText) btnText.textContent = '✓ 多选';
+  },
+  
+  clearGallery() {
+    const history = JSON.parse(localStorage.getItem('brewmaster_history') || '[]');
+    if (history.length === 0) return;
+    
+    if (!confirm(`确定要清空所有 ${history.length} 条酿造记录吗？此操作不可恢复！`)) return;
+    
+    localStorage.setItem('brewmaster_history', '[]');
+    this.state.gallerySelected = [];
+    this.state.gallerySelectMode = false;
+    UI.renderGallery();
+    
+    const btnText = document.getElementById('select-mode-text');
+    if (btnText) btnText.textContent = '✓ 多选';
+  },
+  
+  renameGalleryItem(id) {
+    const history = JSON.parse(localStorage.getItem('brewmaster_history') || '[]');
+    const beer = history.find(b => b.id === id);
+    if (!beer) return;
+    
+    const newName = prompt('给这款啤酒起个新名字：', beer.name || '');
+    if (newName === null) return; // 用户取消
+    
+    beer.name = newName.trim() || beer.name;
+    localStorage.setItem('brewmaster_history', JSON.stringify(history));
+    UI.renderGallery();
+  },
+  
+  // ===== 酒吧小费 =====
+  calculateTip(matchScore, isBest) {
+    let baseTip = 0;
+    
+    if (isBest) {
+      // 完美推荐：10-20元
+      baseTip = 10 + Math.floor(Math.random() * 11);
+    } else if (matchScore >= 70) {
+      // 很好：5-10元
+      baseTip = 5 + Math.floor(Math.random() * 6);
+    } else if (matchScore >= 40) {
+      // 一般：1-5元
+      baseTip = 1 + Math.floor(Math.random() * 5);
+    } else {
+      // 不满意：0-2元（同情小费）
+      baseTip = Math.floor(Math.random() * 3);
+    }
+    
+    // 连胜加成
+    const streakBonus = Math.min(this.state.bar.streak * 2, 20);
+    
+    // 等级加成
+    const levelBonus = (this.state.bar.level - 1) * 3;
+    
+    return baseTip + streakBonus + levelBonus;
   }
 };
 
@@ -1140,6 +1285,20 @@ document.addEventListener('DOMContentLoaded', () => {
       unlocked.push(firstStyle.id);
       localStorage.setItem('brewmaster_unlocked', JSON.stringify(unlocked));
     }
+  }
+  
+  // PWA 安装提示
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    game.state.installPrompt = e;
+    const btn = document.getElementById('btn-install');
+    if (btn) btn.style.display = 'block';
+  });
+  
+  // 检测是否已安装
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    const btn = document.getElementById('btn-install');
+    if (btn) btn.style.display = 'none';
   }
   
   console.log('🍀🍺 Hoppy Go Lucky 已加载');

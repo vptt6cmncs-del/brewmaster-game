@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FF6F00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Hoppy Go Lucky - 啤酒酿造小游戏</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -45,6 +49,9 @@
       </div>
       <button class="btn-secondary" onclick="game.toPage('gallery')">
         <span>📷</span> 我的酒窖
+      </button>
+      <button class="btn-home-muted" id="btn-install" onclick="game.installPWA()" style="display:none;">
+        <span>📲</span> 添加到桌面
       </button>
       <p class="credit">基于 BJCP 2021 啤酒风格指南 · 酿造快乐，分享幸运 🍀</p>
     </div>
@@ -137,6 +144,10 @@
           <div class="stat-box">
             <div class="stat-value" id="bar-best">0</div>
             <div class="stat-label">最高连胜</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="bar-tips">0</div>
+            <div class="stat-label">小费收入(元)</div>
           </div>
         </div>
         <button class="btn-primary" onclick="game.startBarMode()">
@@ -472,6 +483,14 @@
       <h2>我的酒窖</h2>
     </div>
     <div class="page-body">
+      <div class="gallery-actions" id="gallery-actions" style="display:none;">
+        <button class="btn-action" onclick="game.toggleGallerySelect()">
+          <span id="select-mode-text">✓ 多选</span>
+        </button>
+        <button class="btn-action btn-action-danger" onclick="game.clearGallery()">
+          <span>🗑 清空</span>
+        </button>
+      </div>
       <div class="gallery-grid" id="gallery-grid">
         <p class="empty-hint">还没有酿造记录，快去酿一杯吧！</p>
       </div>

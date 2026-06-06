@@ -661,9 +661,40 @@ const UI = {
   // 渲染酒窖
   renderGallery() {
     const grid = document.getElementById('gallery-grid');
+    const actions = document.getElementById('gallery-actions');
     if (!grid) return;
     
     const history = JSON.parse(localStorage.getItem('brewmaster_history') || '[]');
+    const selectMode = game.state.gallerySelectMode;
+    const selected = game.state.gallerySelected;
+    
+    // 显示/隐藏操作栏
+    if (actions) {
+      actions.style.display = history.length > 0 ? 'flex' : 'none';
+    }
+    
+    // 更新操作栏按钮
+    if (actions) {
+      if (selectMode && selected.length > 0) {
+        actions.innerHTML = `
+          <button class="btn-action" onclick="game.toggleGallerySelect()">
+            <span>✓ 完成</span>
+          </button>
+          <button class="btn-action btn-action-danger" onclick="game.deleteSelectedGallery()">
+            <span>🗑 删除(${selected.length})</span>
+          </button>
+        `;
+      } else {
+        actions.innerHTML = `
+          <button class="btn-action" onclick="game.toggleGallerySelect()">
+            <span>${selectMode ? '✓ 完成' : '✓ 多选'}</span>
+          </button>
+          <button class="btn-action btn-action-danger" onclick="game.clearGallery()">
+            <span>🗑 清空</span>
+          </button>
+        `;
+      }
+    }
     
     if (history.length === 0) {
       grid.innerHTML = '<p class="empty-hint">还没有酿造记录，快去酿一杯吧！</p>';
@@ -671,14 +702,26 @@ const UI = {
     }
     
     grid.innerHTML = '';
-    history.reverse().forEach(beer => {
+    history.slice().reverse().forEach(beer => {
+      const isSelected = selected.includes(beer.id);
       const item = document.createElement('div');
-      item.className = 'gallery-item';
+      item.className = `gallery-item ${selectMode ? 'selectable' : ''} ${isSelected ? 'selected' : ''}`;
+      
+      if (selectMode) {
+        item.onclick = () => game.toggleGalleryItem(beer.id);
+      }
+      
       item.innerHTML = `
+        ${selectMode ? `<div class="gallery-checkbox">${isSelected ? '✓' : ''}</div>` : ''}
         <div class="gallery-beer">🍀🍺</div>
         <div class="gallery-name">${beer.name || '未命名'}</div>
         <div class="gallery-style">${beer.styleName || '?'}</div>
         <div class="gallery-score">${beer.score}分</div>
+        ${!selectMode ? `
+          <div class="gallery-actions-inline">
+            <button class="gallery-btn-small" onclick="event.stopPropagation(); game.renameGalleryItem(${beer.id})">✏️ 重命名</button>
+          </div>
+        ` : ''}
       `;
       grid.appendChild(item);
     });
